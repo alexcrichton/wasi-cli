@@ -182,7 +182,14 @@ reached.</p>
 <h4><a name="datetime"><code>type datetime</code></a></h4>
 <p><a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
 <p>
-#### <a name="timezone_display">`record timezone-display`</a>
+#### <a name="timezone">`type timezone`</a>
+`u32`
+<p>A timezone.
+<p>In timezones that recognize daylight saving time, also known as daylight
+time and summer time, the information returned from the functions varies
+over time to reflect these adjustments.</p>
+<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
+<h4><a name="timezone_display"><code>record timezone-display</code></a></h4>
 <p>Information useful for displaying the timezone of a specific <a href="#datetime"><code>datetime</code></a>.</p>
 <p>This information may vary within a single <a href="#timezone"><code>timezone</code></a> to reflect daylight
 saving time adjustments.</p>
@@ -214,13 +221,6 @@ representation of the UTC offset may be returned, such as <code>-04:00</code>.</
 should return false.</p>
 </li>
 </ul>
-<h4><a name="timezone"><code>type timezone</code></a></h4>
-<p><code>u32</code></p>
-<p>A timezone.
-<p>In timezones that recognize daylight saving time, also known as daylight
-time and summer time, the information returned from the functions varies
-over time to reflect these adjustments.</p>
-<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
 <hr />
 <h3>Functions</h3>
 <h4><a name="display"><code>display: func</code></a></h4>
@@ -267,7 +267,11 @@ when it does, they are expected to subsume this API.</p>
 <h4><a name="pollable"><code>type pollable</code></a></h4>
 <p><a href="#pollable"><a href="#pollable"><code>pollable</code></a></a></p>
 <p>
-#### <a name="stream_status">`enum stream-status`</a>
+#### <a name="stream_error">`record stream-error`</a>
+<p>An error type returned from a stream operation. Currently this
+doesn't provide any additional information.</p>
+<h5>Record Fields</h5>
+<h4><a name="stream_status"><code>enum stream-status</code></a></h4>
 <p>Streams provide a sequence of data and then end; once they end, they
 no longer provide any further data.</p>
 <p>For example, a stream reading from a file ends when the stream reaches
@@ -284,25 +288,6 @@ socket ends when the socket is closed.</p>
 <p>The stream has ended and will not produce any further data.
 </li>
 </ul>
-<h4><a name="stream_error"><code>record stream-error</code></a></h4>
-<p>An error type returned from a stream operation. Currently this
-doesn't provide any additional information.</p>
-<h5>Record Fields</h5>
-<h4><a name="output_stream"><code>type output-stream</code></a></h4>
-<p><code>u32</code></p>
-<p>An output bytestream. In the future, this will be replaced by handle
-types.
-<p>This conceptually represents a <code>stream&lt;u8, _&gt;</code>. It's temporary
-scaffolding until component-model's async features are ready.</p>
-<p><a href="#output_stream"><code>output-stream</code></a>s are <em>non-blocking</em> to the extent practical on
-underlying platforms. Except where specified otherwise, I/O operations also
-always return promptly, after the number of bytes that can be written
-promptly, which could even be zero. To wait for the stream to be ready to
-accept data, the <a href="#subscribe_to_output_stream"><code>subscribe-to-output-stream</code></a> function to obtain a
-<a href="#pollable"><code>pollable</code></a> which can be polled for using <code>wasi_poll</code>.</p>
-<p>And at present, it is a <code>u32</code> instead of being an actual handle, until
-the wit-bindgen implementation of handles and resources is ready.</p>
-<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
 <h4><a name="input_stream"><code>type input-stream</code></a></h4>
 <p><code>u32</code></p>
 <p>An input bytestream. In the future, this will be replaced by handle
@@ -315,6 +300,21 @@ promptly available than requested, they return the number of bytes promptly
 available, which could even be zero. To wait for data to be available,
 use the <a href="#subscribe_to_input_stream"><code>subscribe-to-input-stream</code></a> function to obtain a <a href="#pollable"><code>pollable</code></a> which
 can be polled for using <code>wasi_poll</code>.</p>
+<p>And at present, it is a <code>u32</code> instead of being an actual handle, until
+the wit-bindgen implementation of handles and resources is ready.</p>
+<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
+<h4><a name="output_stream"><code>type output-stream</code></a></h4>
+<p><code>u32</code></p>
+<p>An output bytestream. In the future, this will be replaced by handle
+types.
+<p>This conceptually represents a <code>stream&lt;u8, _&gt;</code>. It's temporary
+scaffolding until component-model's async features are ready.</p>
+<p><a href="#output_stream"><code>output-stream</code></a>s are <em>non-blocking</em> to the extent practical on
+underlying platforms. Except where specified otherwise, I/O operations also
+always return promptly, after the number of bytes that can be written
+promptly, which could even be zero. To wait for the stream to be ready to
+accept data, the <a href="#subscribe_to_output_stream"><code>subscribe-to-output-stream</code></a> function to obtain a
+<a href="#pollable"><code>pollable</code></a> which can be polled for using <code>wasi_poll</code>.</p>
 <p>And at present, it is a <code>u32</code> instead of being an actual handle, until
 the wit-bindgen implementation of handles and resources is ready.</p>
 <p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
@@ -553,7 +553,108 @@ underlying filesystem, the function fails with <a href="#error_code.not_permitte
 #### <a name="datetime">`type datetime`</a>
 [`datetime`](#datetime)
 <p>
-#### <a name="path_flags">`flags path-flags`</a>
+#### <a name="filesize">`type filesize`</a>
+`u64`
+<p>File size or length of a region within a file.
+<h4><a name="descriptor_type"><code>enum descriptor-type</code></a></h4>
+<p>The type of a filesystem object referenced by a descriptor.</p>
+<p>Note: This was called <code>filetype</code> in earlier versions of WASI.</p>
+<h5>Enum Cases</h5>
+<ul>
+<li>
+<p><a name="descriptor_type.unknown"><code>unknown</code></a></p>
+<p>The type of the descriptor or file is unknown or is different from
+any of the other types specified.
+</li>
+<li>
+<p><a name="descriptor_type.block_device"><code>block-device</code></a></p>
+<p>The descriptor refers to a block device inode.
+</li>
+<li>
+<p><a name="descriptor_type.character_device"><code>character-device</code></a></p>
+<p>The descriptor refers to a character device inode.
+</li>
+<li>
+<p><a name="descriptor_type.directory"><code>directory</code></a></p>
+<p>The descriptor refers to a directory inode.
+</li>
+<li>
+<p><a name="descriptor_type.fifo"><code>fifo</code></a></p>
+<p>The descriptor refers to a named pipe.
+</li>
+<li>
+<p><a name="descriptor_type.symbolic_link"><code>symbolic-link</code></a></p>
+<p>The file refers to a symbolic link inode.
+</li>
+<li>
+<p><a name="descriptor_type.regular_file"><code>regular-file</code></a></p>
+<p>The descriptor refers to a regular file inode.
+</li>
+<li>
+<p><a name="descriptor_type.socket"><code>socket</code></a></p>
+<p>The descriptor refers to a socket.
+</li>
+</ul>
+<h4><a name="descriptor_flags"><code>flags descriptor-flags</code></a></h4>
+<p>Descriptor flags.</p>
+<p>Note: This was called <code>fdflags</code> in earlier versions of WASI.</p>
+<h5>Flags members</h5>
+<ul>
+<li>
+<p><a name="descriptor_flags.read"><a href="#read"><code>read</code></a></a>: </p>
+<p>Read mode: Data can be read.
+</li>
+<li>
+<p><a name="descriptor_flags.write"><a href="#write"><code>write</code></a></a>: </p>
+<p>Write mode: Data can be written to.
+</li>
+<li>
+<p><a name="descriptor_flags.non_blocking"><code>non-blocking</code></a>: </p>
+<p>Requests non-blocking operation.
+<p>When this flag is enabled, functions may return immediately with an
+<a href="#error_code.would_block"><code>error-code::would-block</code></a> error code in situations where they would
+otherwise block. However, this non-blocking behavior is not
+required. Implementations are permitted to ignore this flag and
+block. This is similar to <code>O_NONBLOCK</code> in POSIX.</p>
+</li>
+<li>
+<p><a name="descriptor_flags.file_integrity_sync"><code>file-integrity-sync</code></a>: </p>
+<p>Request that writes be performed according to synchronized I/O file
+integrity completion. The data stored in the file and the file's
+metadata are synchronized. This is similar to `O_SYNC` in POSIX.
+<p>The precise semantics of this operation have not yet been defined for
+WASI. At this time, it should be interpreted as a request, and not a
+requirement.</p>
+</li>
+<li>
+<p><a name="descriptor_flags.data_integrity_sync"><code>data-integrity-sync</code></a>: </p>
+<p>Request that writes be performed according to synchronized I/O data
+integrity completion. Only the data stored in the file is
+synchronized. This is similar to `O_DSYNC` in POSIX.
+<p>The precise semantics of this operation have not yet been defined for
+WASI. At this time, it should be interpreted as a request, and not a
+requirement.</p>
+</li>
+<li>
+<p><a name="descriptor_flags.requested_write_sync"><code>requested-write-sync</code></a>: </p>
+<p>Requests that reads be performed at the same level of integrety
+requested for writes. This is similar to `O_RSYNC` in POSIX.
+<p>The precise semantics of this operation have not yet been defined for
+WASI. At this time, it should be interpreted as a request, and not a
+requirement.</p>
+</li>
+<li>
+<p><a name="descriptor_flags.mutate_directory"><code>mutate-directory</code></a>: </p>
+<p>Mutating directories mode: Directory contents may be mutated.
+<p>When this flag is unset on a descriptor, operations using the
+descriptor which would create, rename, delete, modify the data or
+metadata of filesystem objects, or obtain another handle which
+would permit any of those, shall fail with <a href="#error_code.read_only"><code>error-code::read-only</code></a> if
+they would otherwise succeed.</p>
+<p>This may only be set on directories.</p>
+</li>
+</ul>
+<h4><a name="path_flags"><code>flags path-flags</code></a></h4>
 <p>Flags determining the method of how paths are resolved.</p>
 <h5>Flags members</h5>
 <ul>
@@ -603,26 +704,84 @@ filesystem.
 filesystem. This does not apply to directories.
 </li>
 </ul>
-<h4><a name="metadata_hash_value"><code>record metadata-hash-value</code></a></h4>
-<p>A 128-bit hash value, split into parts because wasm doesn't have a
-128-bit integer type.</p>
-<h5>Record Fields</h5>
+<h4><a name="access_type"><code>variant access-type</code></a></h4>
+<p>Access type used by <a href="#access_at"><code>access-at</code></a>.</p>
+<h5>Variant Cases</h5>
 <ul>
 <li>
-<p><a name="metadata_hash_value.lower"><code>lower</code></a>: <code>u64</code></p>
-<p>64 bits of a 128-bit hash value.
+<p><a name="access_type.access"><code>access</code></a>: <a href="#modes"><a href="#modes"><code>modes</code></a></a></p>
+<p>Test for readability, writeability, or executability.
 </li>
 <li>
-<p><a name="metadata_hash_value.upper"><code>upper</code></a>: <code>u64</code></p>
-<p>Another 64 bits of a 128-bit hash value.
+<p><a name="access_type.exists"><code>exists</code></a></p>
+<p>Test whether the path exists.
 </li>
 </ul>
 <h4><a name="link_count"><code>type link-count</code></a></h4>
 <p><code>u64</code></p>
 <p>Number of hard links to an inode.
-<h4><a name="filesize"><code>type filesize</code></a></h4>
-<p><code>u64</code></p>
-<p>File size or length of a region within a file.
+<h4><a name="descriptor_stat"><code>record descriptor-stat</code></a></h4>
+<p>File attributes.</p>
+<p>Note: This was called <code>filestat</code> in earlier versions of WASI.</p>
+<h5>Record Fields</h5>
+<ul>
+<li>
+<p><a name="descriptor_stat.type"><code>type</code></a>: <a href="#descriptor_type"><a href="#descriptor_type"><code>descriptor-type</code></a></a></p>
+<p>File type.
+</li>
+<li>
+<p><a name="descriptor_stat.link_count"><a href="#link_count"><code>link-count</code></a></a>: <a href="#link_count"><a href="#link_count"><code>link-count</code></a></a></p>
+<p>Number of hard links to the file.
+</li>
+<li>
+<p><a name="descriptor_stat.size"><code>size</code></a>: <a href="#filesize"><a href="#filesize"><code>filesize</code></a></a></p>
+<p>For regular files, the file size in bytes. For symbolic links, the
+length in bytes of the pathname contained in the symbolic link.
+</li>
+<li>
+<p><a name="descriptor_stat.data_access_timestamp"><code>data-access-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
+<p>Last data access timestamp.
+</li>
+<li>
+<p><a name="descriptor_stat.data_modification_timestamp"><code>data-modification-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
+<p>Last data modification timestamp.
+</li>
+<li>
+<p><a name="descriptor_stat.status_change_timestamp"><code>status-change-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
+<p>Last file status change timestamp.
+</li>
+</ul>
+<h4><a name="new_timestamp"><code>variant new-timestamp</code></a></h4>
+<p>When setting a timestamp, this gives the value to set it to.</p>
+<h5>Variant Cases</h5>
+<ul>
+<li>
+<p><a name="new_timestamp.no_change"><code>no-change</code></a></p>
+<p>Leave the timestamp set to its previous value.
+</li>
+<li>
+<p><a name="new_timestamp.now"><a href="#now"><code>now</code></a></a></p>
+<p>Set the timestamp to the current time of the system clock associated
+with the filesystem.
+</li>
+<li>
+<p><a name="new_timestamp.timestamp"><code>timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
+<p>Set the timestamp to the given value.
+</li>
+</ul>
+<h4><a name="directory_entry"><code>record directory-entry</code></a></h4>
+<p>A directory entry.</p>
+<h5>Record Fields</h5>
+<ul>
+<li>
+<p><a name="directory_entry.type"><code>type</code></a>: <a href="#descriptor_type"><a href="#descriptor_type"><code>descriptor-type</code></a></a></p>
+<p>The type of the file referred to by this directory entry.
+</li>
+<li>
+<p><a name="directory_entry.name"><code>name</code></a>: <code>string</code></p>
+<p>The name of the object.
+</li>
+</ul>
 <h4><a name="error_code"><code>enum error-code</code></a></h4>
 <p>Error codes returned by functions, similar to <code>errno</code> in POSIX.
 Not all of these error codes are returned by the functions provided by this
@@ -779,176 +938,6 @@ merely for alignment with POSIX.</p>
 <p>Cross-device link, similar to `EXDEV` in POSIX.
 </li>
 </ul>
-<h4><a name="directory_entry_stream"><code>type directory-entry-stream</code></a></h4>
-<p><code>u32</code></p>
-<p>A stream of directory entries.
-<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Streams">represents a stream of <code>dir-entry</code></a>.</p>
-<h4><a name="descriptor_type"><code>enum descriptor-type</code></a></h4>
-<p>The type of a filesystem object referenced by a descriptor.</p>
-<p>Note: This was called <code>filetype</code> in earlier versions of WASI.</p>
-<h5>Enum Cases</h5>
-<ul>
-<li>
-<p><a name="descriptor_type.unknown"><code>unknown</code></a></p>
-<p>The type of the descriptor or file is unknown or is different from
-any of the other types specified.
-</li>
-<li>
-<p><a name="descriptor_type.block_device"><code>block-device</code></a></p>
-<p>The descriptor refers to a block device inode.
-</li>
-<li>
-<p><a name="descriptor_type.character_device"><code>character-device</code></a></p>
-<p>The descriptor refers to a character device inode.
-</li>
-<li>
-<p><a name="descriptor_type.directory"><code>directory</code></a></p>
-<p>The descriptor refers to a directory inode.
-</li>
-<li>
-<p><a name="descriptor_type.fifo"><code>fifo</code></a></p>
-<p>The descriptor refers to a named pipe.
-</li>
-<li>
-<p><a name="descriptor_type.symbolic_link"><code>symbolic-link</code></a></p>
-<p>The file refers to a symbolic link inode.
-</li>
-<li>
-<p><a name="descriptor_type.regular_file"><code>regular-file</code></a></p>
-<p>The descriptor refers to a regular file inode.
-</li>
-<li>
-<p><a name="descriptor_type.socket"><code>socket</code></a></p>
-<p>The descriptor refers to a socket.
-</li>
-</ul>
-<h4><a name="directory_entry"><code>record directory-entry</code></a></h4>
-<p>A directory entry.</p>
-<h5>Record Fields</h5>
-<ul>
-<li>
-<p><a name="directory_entry.type"><code>type</code></a>: <a href="#descriptor_type"><a href="#descriptor_type"><code>descriptor-type</code></a></a></p>
-<p>The type of the file referred to by this directory entry.
-</li>
-<li>
-<p><a name="directory_entry.name"><code>name</code></a>: <code>string</code></p>
-<p>The name of the object.
-</li>
-</ul>
-<h4><a name="descriptor_flags"><code>flags descriptor-flags</code></a></h4>
-<p>Descriptor flags.</p>
-<p>Note: This was called <code>fdflags</code> in earlier versions of WASI.</p>
-<h5>Flags members</h5>
-<ul>
-<li>
-<p><a name="descriptor_flags.read"><a href="#read"><code>read</code></a></a>: </p>
-<p>Read mode: Data can be read.
-</li>
-<li>
-<p><a name="descriptor_flags.write"><a href="#write"><code>write</code></a></a>: </p>
-<p>Write mode: Data can be written to.
-</li>
-<li>
-<p><a name="descriptor_flags.non_blocking"><code>non-blocking</code></a>: </p>
-<p>Requests non-blocking operation.
-<p>When this flag is enabled, functions may return immediately with an
-<a href="#error_code.would_block"><code>error-code::would-block</code></a> error code in situations where they would
-otherwise block. However, this non-blocking behavior is not
-required. Implementations are permitted to ignore this flag and
-block. This is similar to <code>O_NONBLOCK</code> in POSIX.</p>
-</li>
-<li>
-<p><a name="descriptor_flags.file_integrity_sync"><code>file-integrity-sync</code></a>: </p>
-<p>Request that writes be performed according to synchronized I/O file
-integrity completion. The data stored in the file and the file's
-metadata are synchronized. This is similar to `O_SYNC` in POSIX.
-<p>The precise semantics of this operation have not yet been defined for
-WASI. At this time, it should be interpreted as a request, and not a
-requirement.</p>
-</li>
-<li>
-<p><a name="descriptor_flags.data_integrity_sync"><code>data-integrity-sync</code></a>: </p>
-<p>Request that writes be performed according to synchronized I/O data
-integrity completion. Only the data stored in the file is
-synchronized. This is similar to `O_DSYNC` in POSIX.
-<p>The precise semantics of this operation have not yet been defined for
-WASI. At this time, it should be interpreted as a request, and not a
-requirement.</p>
-</li>
-<li>
-<p><a name="descriptor_flags.requested_write_sync"><code>requested-write-sync</code></a>: </p>
-<p>Requests that reads be performed at the same level of integrety
-requested for writes. This is similar to `O_RSYNC` in POSIX.
-<p>The precise semantics of this operation have not yet been defined for
-WASI. At this time, it should be interpreted as a request, and not a
-requirement.</p>
-</li>
-<li>
-<p><a name="descriptor_flags.mutate_directory"><code>mutate-directory</code></a>: </p>
-<p>Mutating directories mode: Directory contents may be mutated.
-<p>When this flag is unset on a descriptor, operations using the
-descriptor which would create, rename, delete, modify the data or
-metadata of filesystem objects, or obtain another handle which
-would permit any of those, shall fail with <a href="#error_code.read_only"><code>error-code::read-only</code></a> if
-they would otherwise succeed.</p>
-<p>This may only be set on directories.</p>
-</li>
-</ul>
-<h4><a name="descriptor"><code>type descriptor</code></a></h4>
-<p><code>u32</code></p>
-<p>A descriptor is a reference to a filesystem object, which may be a file,
-directory, named pipe, special file, or other object on which filesystem
-calls may be made.
-<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
-<h4><a name="new_timestamp"><code>variant new-timestamp</code></a></h4>
-<p>When setting a timestamp, this gives the value to set it to.</p>
-<h5>Variant Cases</h5>
-<ul>
-<li>
-<p><a name="new_timestamp.no_change"><code>no-change</code></a></p>
-<p>Leave the timestamp set to its previous value.
-</li>
-<li>
-<p><a name="new_timestamp.now"><a href="#now"><code>now</code></a></a></p>
-<p>Set the timestamp to the current time of the system clock associated
-with the filesystem.
-</li>
-<li>
-<p><a name="new_timestamp.timestamp"><code>timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
-<p>Set the timestamp to the given value.
-</li>
-</ul>
-<h4><a name="descriptor_stat"><code>record descriptor-stat</code></a></h4>
-<p>File attributes.</p>
-<p>Note: This was called <code>filestat</code> in earlier versions of WASI.</p>
-<h5>Record Fields</h5>
-<ul>
-<li>
-<p><a name="descriptor_stat.type"><code>type</code></a>: <a href="#descriptor_type"><a href="#descriptor_type"><code>descriptor-type</code></a></a></p>
-<p>File type.
-</li>
-<li>
-<p><a name="descriptor_stat.link_count"><a href="#link_count"><code>link-count</code></a></a>: <a href="#link_count"><a href="#link_count"><code>link-count</code></a></a></p>
-<p>Number of hard links to the file.
-</li>
-<li>
-<p><a name="descriptor_stat.size"><code>size</code></a>: <a href="#filesize"><a href="#filesize"><code>filesize</code></a></a></p>
-<p>For regular files, the file size in bytes. For symbolic links, the
-length in bytes of the pathname contained in the symbolic link.
-</li>
-<li>
-<p><a name="descriptor_stat.data_access_timestamp"><code>data-access-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
-<p>Last data access timestamp.
-</li>
-<li>
-<p><a name="descriptor_stat.data_modification_timestamp"><code>data-modification-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
-<p>Last data modification timestamp.
-</li>
-<li>
-<p><a name="descriptor_stat.status_change_timestamp"><code>status-change-timestamp</code></a>: <a href="#datetime"><a href="#datetime"><code>datetime</code></a></a></p>
-<p>Last file status change timestamp.
-</li>
-</ul>
 <h4><a name="advice"><code>enum advice</code></a></h4>
 <p>File or memory access pattern advisory information.</p>
 <h5>Enum Cases</h5>
@@ -984,19 +973,30 @@ in the near future.
 not reuse it thereafter.
 </li>
 </ul>
-<h4><a name="access_type"><code>variant access-type</code></a></h4>
-<p>Access type used by <a href="#access_at"><code>access-at</code></a>.</p>
-<h5>Variant Cases</h5>
+<h4><a name="descriptor"><code>type descriptor</code></a></h4>
+<p><code>u32</code></p>
+<p>A descriptor is a reference to a filesystem object, which may be a file,
+directory, named pipe, special file, or other object on which filesystem
+calls may be made.
+<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources">represents a resource</a>.</p>
+<h4><a name="metadata_hash_value"><code>record metadata-hash-value</code></a></h4>
+<p>A 128-bit hash value, split into parts because wasm doesn't have a
+128-bit integer type.</p>
+<h5>Record Fields</h5>
 <ul>
 <li>
-<p><a name="access_type.access"><code>access</code></a>: <a href="#modes"><a href="#modes"><code>modes</code></a></a></p>
-<p>Test for readability, writeability, or executability.
+<p><a name="metadata_hash_value.lower"><code>lower</code></a>: <code>u64</code></p>
+<p>64 bits of a 128-bit hash value.
 </li>
 <li>
-<p><a name="access_type.exists"><code>exists</code></a></p>
-<p>Test whether the path exists.
+<p><a name="metadata_hash_value.upper"><code>upper</code></a>: <code>u64</code></p>
+<p>Another 64 bits of a 128-bit hash value.
 </li>
 </ul>
+<h4><a name="directory_entry_stream"><code>type directory-entry-stream</code></a></h4>
+<p><code>u32</code></p>
+<p>A stream of directory entries.
+<p>This <a href="https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Streams">represents a stream of <code>dir-entry</code></a>.</p>
 <hr />
 <h3>Functions</h3>
 <h4><a name="read_via_stream"><code>read-via-stream: func</code></a></h4>
@@ -1637,64 +1637,6 @@ to by a directory descriptor and a relative path.</p>
 This enables context-based security for networking.
 There is no need for this to map 1:1 to a physical network interface.
 <p>FYI, In the future this will be replaced by handle types.</p>
-<h4><a name="ipv6_address"><code>tuple ipv6-address</code></a></h4>
-<h5>Tuple Fields</h5>
-<ul>
-<li><a name="ipv6_address.0"><code>0</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.1"><code>1</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.2"><code>2</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.3"><code>3</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.4"><code>4</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.5"><code>5</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.6"><code>6</code></a>: <code>u16</code></li>
-<li><a name="ipv6_address.7"><code>7</code></a>: <code>u16</code></li>
-</ul>
-<h4><a name="ipv6_socket_address"><code>record ipv6-socket-address</code></a></h4>
-<h5>Record Fields</h5>
-<ul>
-<li><a name="ipv6_socket_address.port"><code>port</code></a>: <code>u16</code></li>
-<li><a name="ipv6_socket_address.flow_info"><code>flow-info</code></a>: <code>u32</code></li>
-<li><a name="ipv6_socket_address.address"><code>address</code></a>: <a href="#ipv6_address"><a href="#ipv6_address"><code>ipv6-address</code></a></a></li>
-<li><a name="ipv6_socket_address.scope_id"><code>scope-id</code></a>: <code>u32</code></li>
-</ul>
-<h4><a name="ipv4_address"><code>tuple ipv4-address</code></a></h4>
-<h5>Tuple Fields</h5>
-<ul>
-<li><a name="ipv4_address.0"><code>0</code></a>: <code>u8</code></li>
-<li><a name="ipv4_address.1"><code>1</code></a>: <code>u8</code></li>
-<li><a name="ipv4_address.2"><code>2</code></a>: <code>u8</code></li>
-<li><a name="ipv4_address.3"><code>3</code></a>: <code>u8</code></li>
-</ul>
-<h4><a name="ipv4_socket_address"><code>record ipv4-socket-address</code></a></h4>
-<h5>Record Fields</h5>
-<ul>
-<li><a name="ipv4_socket_address.port"><code>port</code></a>: <code>u16</code></li>
-<li><a name="ipv4_socket_address.address"><code>address</code></a>: <a href="#ipv4_address"><a href="#ipv4_address"><code>ipv4-address</code></a></a></li>
-</ul>
-<h4><a name="ip_socket_address"><code>variant ip-socket-address</code></a></h4>
-<h5>Variant Cases</h5>
-<ul>
-<li><a name="ip_socket_address.ipv4"><code>ipv4</code></a>: <a href="#ipv4_socket_address"><a href="#ipv4_socket_address"><code>ipv4-socket-address</code></a></a></li>
-<li><a name="ip_socket_address.ipv6"><code>ipv6</code></a>: <a href="#ipv6_socket_address"><a href="#ipv6_socket_address"><code>ipv6-socket-address</code></a></a></li>
-</ul>
-<h4><a name="ip_address_family"><code>enum ip-address-family</code></a></h4>
-<h5>Enum Cases</h5>
-<ul>
-<li>
-<p><a name="ip_address_family.ipv4"><code>ipv4</code></a></p>
-<p>Similar to `AF_INET` in POSIX.
-</li>
-<li>
-<p><a name="ip_address_family.ipv6"><code>ipv6</code></a></p>
-<p>Similar to `AF_INET6` in POSIX.
-</li>
-</ul>
-<h4><a name="ip_address"><code>variant ip-address</code></a></h4>
-<h5>Variant Cases</h5>
-<ul>
-<li><a name="ip_address.ipv4"><code>ipv4</code></a>: <a href="#ipv4_address"><a href="#ipv4_address"><code>ipv4-address</code></a></a></li>
-<li><a name="ip_address.ipv6"><code>ipv6</code></a>: <a href="#ipv6_address"><a href="#ipv6_address"><code>ipv6-address</code></a></a></li>
-</ul>
 <h4><a name="error_code"><code>enum error-code</code></a></h4>
 <p>Error codes.</p>
 <p>In theory, every API can return any error code.
@@ -1843,6 +1785,64 @@ combined with a couple of errors that are always possible:</p>
 <p><a name="error_code.permanent_resolver_failure"><code>permanent-resolver-failure</code></a></p>
 <p>A permanent failure in name resolution occurred.
 </li>
+</ul>
+<h4><a name="ip_address_family"><code>enum ip-address-family</code></a></h4>
+<h5>Enum Cases</h5>
+<ul>
+<li>
+<p><a name="ip_address_family.ipv4"><code>ipv4</code></a></p>
+<p>Similar to `AF_INET` in POSIX.
+</li>
+<li>
+<p><a name="ip_address_family.ipv6"><code>ipv6</code></a></p>
+<p>Similar to `AF_INET6` in POSIX.
+</li>
+</ul>
+<h4><a name="ipv4_address"><code>tuple ipv4-address</code></a></h4>
+<h5>Tuple Fields</h5>
+<ul>
+<li><a name="ipv4_address.0"><code>0</code></a>: <code>u8</code></li>
+<li><a name="ipv4_address.1"><code>1</code></a>: <code>u8</code></li>
+<li><a name="ipv4_address.2"><code>2</code></a>: <code>u8</code></li>
+<li><a name="ipv4_address.3"><code>3</code></a>: <code>u8</code></li>
+</ul>
+<h4><a name="ipv6_address"><code>tuple ipv6-address</code></a></h4>
+<h5>Tuple Fields</h5>
+<ul>
+<li><a name="ipv6_address.0"><code>0</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.1"><code>1</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.2"><code>2</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.3"><code>3</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.4"><code>4</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.5"><code>5</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.6"><code>6</code></a>: <code>u16</code></li>
+<li><a name="ipv6_address.7"><code>7</code></a>: <code>u16</code></li>
+</ul>
+<h4><a name="ip_address"><code>variant ip-address</code></a></h4>
+<h5>Variant Cases</h5>
+<ul>
+<li><a name="ip_address.ipv4"><code>ipv4</code></a>: <a href="#ipv4_address"><a href="#ipv4_address"><code>ipv4-address</code></a></a></li>
+<li><a name="ip_address.ipv6"><code>ipv6</code></a>: <a href="#ipv6_address"><a href="#ipv6_address"><code>ipv6-address</code></a></a></li>
+</ul>
+<h4><a name="ipv4_socket_address"><code>record ipv4-socket-address</code></a></h4>
+<h5>Record Fields</h5>
+<ul>
+<li><a name="ipv4_socket_address.port"><code>port</code></a>: <code>u16</code></li>
+<li><a name="ipv4_socket_address.address"><code>address</code></a>: <a href="#ipv4_address"><a href="#ipv4_address"><code>ipv4-address</code></a></a></li>
+</ul>
+<h4><a name="ipv6_socket_address"><code>record ipv6-socket-address</code></a></h4>
+<h5>Record Fields</h5>
+<ul>
+<li><a name="ipv6_socket_address.port"><code>port</code></a>: <code>u16</code></li>
+<li><a name="ipv6_socket_address.flow_info"><code>flow-info</code></a>: <code>u32</code></li>
+<li><a name="ipv6_socket_address.address"><code>address</code></a>: <a href="#ipv6_address"><a href="#ipv6_address"><code>ipv6-address</code></a></a></li>
+<li><a name="ipv6_socket_address.scope_id"><code>scope-id</code></a>: <code>u32</code></li>
+</ul>
+<h4><a name="ip_socket_address"><code>variant ip-socket-address</code></a></h4>
+<h5>Variant Cases</h5>
+<ul>
+<li><a name="ip_socket_address.ipv4"><code>ipv4</code></a>: <a href="#ipv4_socket_address"><a href="#ipv4_socket_address"><code>ipv4-socket-address</code></a></a></li>
+<li><a name="ip_socket_address.ipv6"><code>ipv6</code></a>: <a href="#ipv6_socket_address"><a href="#ipv6_socket_address"><code>ipv6-socket-address</code></a></a></li>
 </ul>
 <hr />
 <h3>Functions</h3>
